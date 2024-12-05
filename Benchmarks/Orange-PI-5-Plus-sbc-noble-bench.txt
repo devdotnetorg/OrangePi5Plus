@@ -1,0 +1,228 @@
+Thomas Kaiser’s sbc-bench.sh script:
+https://github.com/ThomasKaiser/sbc-bench
+----------------------------------------------------------------------------------
+wget https://raw.githubusercontent.com/ThomasKaiser/sbc-bench/master/sbc-bench.sh
+chmod +x sbc-bench.sh
+sudo ./sbc-bench.sh -r
+==================================================================================
+
+anton@opi5plus:~$ sudo ./sbc-bench.sh -r
+[sudo] password for anton: 
+Starting to examine hardware/software for review purposes...
+
+sbc-bench v0.9.68
+
+Installing needed tools: apt-get -f -qq -y install links mmc-utils, p7zip 16.02., tinymembench, ramlat, mhz, cpufetch, cpuminer. Done.
+Checking cpufreq OPP. Done.
+Executing tinymembench. Done.
+Executing RAM latency tester. Done.
+Executing OpenSSL benchmark. Done.
+Executing 7-zip benchmark. Done.
+Throttling test: heating up the device, 5 more minutes to wait. Done.
+Checking cpufreq OPP again. Done (19 minutes elapsed).
+
+Results validation:
+
+  * Measured clockspeed not lower than advertised max CPU clockspeed
+  * No swapping
+  * Background activity (%system) OK
+  * No throttling
+
+
+Full results uploaded to https://0x0.st/XGqc.bin
+
+# Orange Pi 5 Plus
+
+Tested with sbc-bench v0.9.68 on Fri, 01 Nov 2024 13:52:29 +0300. Full info: [https://0x0.st/XGqc.bin](http://0x0.st/XGqc.bin)
+
+### General information:
+
+    Information courtesy of cpufetch:
+    
+    SoC:                 Rockchip RK3588
+    Technology:          8nm
+    CPU 1:
+      Microarchitecture: Cortex-A55
+      Max Frequency:     1.800 GHz
+      Cores:             4 cores
+      Features:          NEON,SHA1,SHA2,AES,CRC32
+    CPU 2:
+      Microarchitecture: Cortex-A76
+      Max Frequency:     2.256 GHz
+      Cores:             4 cores
+      Features:          NEON,SHA1,SHA2,AES,CRC32
+    
+The CPU features 3 clusters consisting of 2 different core types:
+
+    Rockchip RK3588 (35881000 / 35 88 12 fe 21 41  32 52 44 32 00 00 00 00), Kernel: aarch64, Userland: arm64
+    
+    CPU sysfs topology (clusters, cpufreq members, clockspeeds)
+                     cpufreq   min    max
+     CPU    cluster  policy   speed  speed   core type
+      0        0        0      408    1800   Cortex-A55 / r2p0
+      1        0        0      408    1800   Cortex-A55 / r2p0
+      2        0        0      408    1800   Cortex-A55 / r2p0
+      3        0        0      408    1800   Cortex-A55 / r2p0
+      4        0        4      408    2256   Cortex-A76 / r4p0
+      5        0        4      408    2256   Cortex-A76 / r4p0
+      6        0        6      408    2256   Cortex-A76 / r4p0
+      7        0        6      408    2256   Cortex-A76 / r4p0
+
+31772 KB available RAM
+
+### Governors/policies (performance vs. idle consumption):
+
+Original governor settings:
+
+    cpufreq-policy0: performance / 1800 MHz (conservative ondemand userspace powersave performance schedutil / 408 600 816 1008 1200 1416 1608 1800)
+    cpufreq-policy4: performance / 2256 MHz (conservative ondemand userspace powersave performance schedutil / 408 600 816 1008 1200 1416 1608 1800 2016 2208 2256)
+    cpufreq-policy6: performance / 2256 MHz (conservative ondemand userspace powersave performance schedutil / 408 600 816 1008 1200 1416 1608 1800 2016 2208 2256)
+    dmc: dmc_ondemand / 2112 MHz (rknpu_ondemand dmc_ondemand userspace powersave performance simple_ondemand / 528 1068 1560 2112)
+    fb000000.gpu: performance / 1000 MHz (rknpu_ondemand dmc_ondemand userspace powersave performance simple_ondemand / 300 400 500 600 700 800 900 1000)
+    fdab0000.npu: rknpu_ondemand / 1000 MHz (rknpu_ondemand dmc_ondemand userspace powersave performance simple_ondemand / 300 400 500 600 700 800 900 1000)
+
+Tuned governor settings:
+
+    cpufreq-policy0: performance / 1800 MHz
+    cpufreq-policy4: performance / 2256 MHz
+    cpufreq-policy6: performance / 2256 MHz
+    dmc: performance / 2112 MHz
+    fb000000.gpu: performance / 1000 MHz
+    fdab0000.npu: performance / 1000 MHz
+
+Status of performance related policies found below /sys:
+
+    /sys/devices/platform/fb000000.gpu/power_policy: [coarse_demand] always_on
+    /sys/module/pcie_aspm/parameters/policy: default [performance] powersave powersupersave
+
+### Clockspeeds (idle vs. heated up):
+
+Before at 54.5°C:
+
+    cpu0-cpu3 (Cortex-A55): OPP: 1800, Measured: 1807 
+    cpu4-cpu5 (Cortex-A76): OPP: 2256, Measured: 2255 
+    cpu6-cpu7 (Cortex-A76): OPP: 2256, Measured: 2252 
+
+After at 56.4°C:
+
+    cpu0-cpu3 (Cortex-A55): OPP: 1800, Measured: 1812 
+    cpu4-cpu5 (Cortex-A76): OPP: 2256, Measured: 2261 
+    cpu6-cpu7 (Cortex-A76): OPP: 2256, Measured: 2259 
+
+### Performance baseline
+
+  * cpu0 (Cortex-A55): memcpy: 6047.6 MB/s, memchr: 2793.6 MB/s, memset: 21823.7 MB/s
+  * cpu4 (Cortex-A76): memcpy: 12340.1 MB/s, memchr: 17939.7 MB/s, memset: 29542.2 MB/s
+  * cpu6 (Cortex-A76): memcpy: 12232.5 MB/s, memchr: 17284.6 MB/s, memset: 29537.6 MB/s
+  * cpu0 (Cortex-A55) 16M latency: 113.1 113.9 119.4 116.4 111.8 118.4 183.5 316.2 
+  * cpu4 (Cortex-A76) 16M latency: 122.0 106.6 112.8 104.7 113.9 107.0 108.4 107.1 
+  * cpu6 (Cortex-A76) 16M latency: 121.0 117.7 113.2 104.8 113.8 107.0 106.4 105.9 
+  * cpu0 (Cortex-A55) 128M latency: 134.9 135.5 134.6 135.5 134.0 136.0 197.5 336.7 
+  * cpu4 (Cortex-A76) 128M latency: 128.9 130.0 128.7 130.0 129.1 125.8 126.5 132.7 
+  * cpu6 (Cortex-A76) 128M latency: 127.9 128.1 127.3 128.0 127.5 124.3 124.8 128.7 
+  * 7-zip MIPS (3 consecutive runs): 16466, 16704, 16665 (16610 avg), single-threaded: 3121
+  * `aes-256-cbc     138622.38k   371243.50k   641340.59k   786428.59k   842017.45k   846812.50k (Cortex-A55)`
+  * `aes-256-cbc     522301.36k   951461.03k  1184093.27k  1255644.50k  1282798.93k  1285368.49k (Cortex-A76)`
+  * `aes-256-cbc     521335.27k   949694.55k  1181953.62k  1253310.46k  1281753.09k  1284248.92k (Cortex-A76)`
+
+### PCIe and storage devices:
+
+  * Realtek RTL8125 2.5GbE: Speed 5GT/s, Width x1, driver in use: r8169, ASPM Disabled
+  * Realtek RTL8125 2.5GbE: Speed 5GT/s, Width x1, driver in use: r8169, ASPM Disabled
+  * 476.9GB "Fanxiang S500Pro 512GB" SSD as /dev/nvme0: Speed 8GT/s, Width x4, 0% worn out, drive temp: 46°C, ASPM Disabled
+  * Xmc XM25QU128C 16MB SPI NOR flash, drivers in use: spi-nor/rockchip-sfc
+
+### Swap configuration:
+
+  * /swapfile on /dev/nvme0n1p1: 1024.0M (0K used)
+
+### Software versions:
+
+  * Ubuntu 24.04.1 LTS (noble)
+  * Compiler: /usr/bin/gcc (Ubuntu 13.2.0-23ubuntu4) 13.2.0 / aarch64-linux-gnu
+  * OpenSSL 3.0.13, built on 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)    
+  * Boot environment: ddr-v1.16-9fffbe1e78, bl31-v1.45, uboot-08/31/2024
+
+### Kernel info:
+
+  * `/proc/cmdline: root=UUID=719bf1d9-7407-4053-a7ab-24199a4a7389 rootwait rw console=ttyS2,1500000 console=tty1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory quiet splash plymouth.ignore-serial-consoles androidboot.fwver=ddr-v1.16-9fffbe1e78,bl31-v1.45,uboot-08/31/2024`
+  * Vulnerability Spec store bypass:    Mitigation; Speculative Store Bypass disabled via prctl
+  * Vulnerability Spectre v1:           Mitigation; __user pointer sanitization
+  * Vulnerability Spectre v2:           Vulnerable: Unprivileged eBPF enabled
+  * Kernel 6.1.0-1025-rockchip / CONFIG_HZ=300
+
+Kernel 6.1.0 is not latest 6.1.114 LTS that was released on 2024-10-22.
+
+See https://endoflife.date/linux for details. It is somewhat likely that
+a lot of exploitable vulnerabilities exist for this kernel as well as many
+unfixed bugs.
+
+But this version string doesn't matter since this is not an official LTS Linux
+from kernel.org. This device runs a Rockchip vendor/BSP kernel.
+
+This kernel is based on a mixture of Android GKI and other sources. Also some
+community attempts to do version string cosmetics might have happened, see
+https://tinyurl.com/2p8fuubd for example. To examine how far away this 6.1.0
+is from an official LTS of same version someone would have to reapply Rockchip's
+thousands of patches to a clean 6.1.0 LTS.
+
+All known settings adjusted for performance. Device now ready for benchmarking.
+Once finished stop with [ctrl]-[c] to get info about throttling, frequency cap
+and too high background activity all potentially invalidating benchmark scores.
+All changes with storage and PCIe devices as well as suspicious dmesg contents
+will be reported too.
+
+Time       cpu0/cpu4/cpu6    load %cpu %sys %usr %nice %io %irq   Temp
+13:52:30: 1800/2256/2256MHz  5.62  33%   0%  31%   0%   0%   0%  50.8°C  
+13:53:30: 1800/2256/2256MHz  2.06   0%   0%   0%   0%   0%   0%  50.8°C  
+13:54:30: 1800/2256/2256MHz  0.79   0%   0%   0%   0%   0%   0%  52.7°C  
+13:55:30: 1800/2256/2256MHz  0.29   0%   0%   0%   0%   0%   0%  52.7°C  
+13:56:30: 1800/2256/2256MHz  0.14   0%   0%   0%   0%   0%   0%  53.6°C  
+13:57:30: 1800/2256/2256MHz  0.05   0%   0%   0%   0%   0%   0%  54.5°C  
+13:58:30: 1800/2256/2256MHz  0.10   0%   0%   0%   0%   0%   0%  53.6°C  
+13:59:30: 1800/2256/2256MHz  0.11   0%   0%   0%   0%   0%   0%  54.5°C  
+14:00:31: 1800/2256/2256MHz  0.16   0%   0%   0%   0%   0%   0%  52.7°C  
+14:01:31: 1800/2256/2256MHz  0.21   0%   0%   0%   0%   0%   0%  54.5°C  
+14:02:31: 1800/2256/2256MHz  0.12   0%   0%   0%   0%   0%   0%  53.6°C  
+14:03:31: 1800/2256/2256MHz  0.04   0%   0%   0%   0%   0%   0%  54.5°C  
+14:04:31: 1800/2256/2256MHz  0.01   0%   0%   0%   0%   0%   0%  53.6°C  
+14:05:31: 1800/2256/2256MHz  0.00   0%   0%   0%   0%   0%   0%  54.5°C  
+
+Time       cpu0/cpu4/cpu6    load %cpu %sys %usr %nice %io %irq   Temp
+14:06:31: 1800/2256/2256MHz  0.00   0%   0%   0%   0%   0%   0%  53.6°C  
+14:07:32: 1800/2256/2256MHz  0.00   0%   0%   0%   0%   0%   0%  53.6°C  
+14:08:32: 1800/2256/2256MHz  0.03   0%   0%   0%   0%   0%   0%  53.6°C  
+14:09:32: 1800/2256/2256MHz  0.04   0%   0%   0%   0%   0%   0%  52.7°C  
+14:10:32: 1800/2256/2256MHz  0.01   0%   0%   0%   0%   0%   0%  53.6°C  
+14:11:32: 1800/2256/2256MHz  0.04   0%   0%   0%   0%   0%   0%  53.6°C  
+14:12:32: 1800/2256/2256MHz  0.01   0%   0%   0%   0%   0%   0%  54.5°C  
+14:13:32: 1800/2256/2256MHz  0.04   0%   0%   0%   0%   0%   0%  52.7°C  
+14:14:32: 1800/2256/2256MHz  0.01   0%   0%   0%   0%   0%   0%  53.6°C  
+14:15:32: 1800/2256/2256MHz  0.00   0%   0%   0%   0%   0%   0%  54.5°C  
+14:16:33: 1800/2256/2256MHz  0.42   2%   0%   1%   0%   0%   0%  53.6°C  
+14:17:33: 1800/2256/2256MHz  0.64   3%   0%   2%   0%   0%   0%  52.7°C  
+^C
+
+Cleaning up. Done.
+Checking cpufreq OPP again. Done.
+
+Clockspeeds now at 54.5°C:
+
+    cpu0-cpu3 (Cortex-A55): OPP: 1800, Measured: 1808 
+    cpu4-cpu5 (Cortex-A76): OPP: 2256, Measured: 2254 
+    cpu6-cpu7 (Cortex-A76): OPP: 2256, Measured: 2252 
+
+ATTENTION: some noise in kernel ring buffer since start of monitoring:
+
+[ 2100.273120] rtw_8822bu 1-1.4:1.0: firmware failed to leave lps state
+[ 2104.326430] rtw_8822bu 1-1.4:1.0: firmware failed to leave lps state
+[ 2674.046615] input: RAPOO 5.0MS Mouse as /devices/virtual/misc/uhid/0005:000E:3412.0004/input/input15
+[ 2674.046755] input: RAPOO 5.0MS Consumer Control as /devices/virtual/misc/uhid/0005:000E:3412.0004/input/input16
+[ 2674.046847] hid-generic 0005:000E:3412.0004: input,hidraw2: BLUETOOTH HID v67.01 Mouse [RAPOO 5.0MS] on 00:13:25:00:18:c2
+
+Results validation:
+
+  * Measured clockspeed not lower than advertised max CPU clockspeed
+  * No swapping
+  * Background activity (%system) OK
+  * No throttling
